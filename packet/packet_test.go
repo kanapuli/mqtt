@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -65,6 +66,92 @@ func TestShiftNBits(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			actual := shiftNBits(tc.n, tc.packet)
 			assert.Equal(t, tc.expectedPacket, actual)
+		})
+	}
+}
+
+func TestGetLowerFourBits(t *testing.T) {
+	testCases := []struct {
+		input    byte
+		expected byte
+	}{
+		{0b11110000, 0b0000}, // Upper 4 bits set, lower 4 bits are 0
+		{0b10101010, 0b1010}, // Lower 4 bits are 1010
+		{0b00001111, 0b1111}, // All lower 4 bits set
+		{0b00000000, 0b0000}, // All bits are 0
+		{0b11111111, 0b1111}, // All bits are set, lower 4 bits are 1111
+	}
+
+	for _, tc := range testCases {
+		actual := getLowerFourBits(tc.input)
+		assert.Equal(t, tc.expected, actual)
+	}
+}
+
+func TestDecodeRemainingLength(t *testing.T) {
+	testCases := []struct {
+		name          string
+		input         []byte
+		expectedValue int
+		expectedBytes int
+		expectedErr   error
+	}{
+		{
+			name:          "Single byte - Max Value",
+			input:         []byte{0x7F},
+			expectedValue: 127,
+			expectedBytes: 1,
+			expectedErr:   nil,
+		},
+		{
+			name:          "Two bytes - Example value 134",
+			input:         []byte{0x86, 0x01},
+			expectedValue: 134,
+			expectedBytes: 2,
+			expectedErr:   nil,
+		},
+		{
+			name:          "Three bytes - Example value 16,383",
+			input:         []byte{0xFF, 0x7F},
+			expectedValue: 16383,
+			expectedBytes: 2,
+			expectedErr:   nil,
+		},
+		{
+			name:          "Four bytes - Max Value",
+			input:         []byte{0xFF, 0xFF, 0xFF, 0x7F},
+			expectedValue: 268435455,
+			expectedBytes: 4,
+			expectedErr:   nil,
+		},
+		{
+			name:          "Malformed - Value too large",
+			input:         []byte{0xFF, 0xFF, 0xFF, 0x80},
+			expectedValue: 0,
+			expectedBytes: 0,
+			expectedErr:   errors.New("malformed Remaining Length in the fixed header"),
+		},
+		{
+			name:          "Insufficient data",
+			input:         []byte{0x80, 0x80},
+			expectedValue: 0,
+			expectedBytes: 0,
+			expectedErr:   errors.New("insufficient data for Remaining Length"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			value, bytesRead, err := decodeVariableByteInteger(tc.input)
+
+			if tc.expectedErr != nil {
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expectedValue, value)
+			assert.Equal(t, tc.expectedBytes, bytesRead)
 		})
 	}
 }
