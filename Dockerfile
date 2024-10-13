@@ -44,11 +44,11 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up Go environment
-ENV GOPATH ~/go
+ENV GOPATH /home/vscode/go
 ENV PATH $GOPATH/bin:$PATH
 
 # Set up Rust environment
-ENV PATH ~/.cargo/bin:$PATH
+ENV PATH /home/vscode/.cargo/bin:$PATH
 
 # Configure git to skip Git LFS
 RUN git config --global lfs.fetchexclude '*'
