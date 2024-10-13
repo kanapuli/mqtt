@@ -5,14 +5,13 @@ import (
 	"fmt"
 )
 
-const (
-	MAX_REMAINING_LENGTH = 128 * 128 * 128 * 128
-)
+const MAX_VARIABLE_BYTE_INTEGER_SIZE = (128 * 128 * 128 * 128) - 1
 
 var (
 	ErrInsufficientFixedHeader            = errors.New("insufficient data for fixed header")
 	ErrMalformedRemainingLength           = errors.New("malformed Remaining Length in the fixed header")
 	ErrInsufficientDataForRemainingLength = errors.New("insufficient data for Remaining Length")
+	ErrVarByteIntegerOutOfRange           = errors.New("value out of range for variable byte integer")
 )
 
 // ControlPacket represents the MQTT control packet.
@@ -65,6 +64,27 @@ func parseFixedHeader(data []byte) (*FixedHeader, error) {
 		return nil, err
 	}
 	return NewFixedHeader(packetTypeAndFlags, remainingLen)
+}
+
+func encodeVariableByteInteger(x int) ([]byte, error) {
+	if x < 0 || x > MAX_VARIABLE_BYTE_INTEGER_SIZE {
+		return nil, ErrVarByteIntegerOutOfRange
+	}
+	var encodedBytes []byte
+	for {
+		// Get the least significant 7 bits
+		encodedByte := byte(x % 128)
+		x /= 128
+		if x > 0 {
+			// set the continuation bit
+			encodedByte |= 0x80
+		}
+		encodedBytes = append(encodedBytes, encodedByte)
+		if x <= 0 {
+			break
+		}
+	}
+	return encodedBytes, nil
 }
 
 func decodeVariableByteInteger(data []byte) (int, int, error) {

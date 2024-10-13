@@ -155,3 +155,63 @@ func TestDecodeRemainingLength(t *testing.T) {
 		})
 	}
 }
+
+func TestEncodeVariableByteInteger(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    int
+		expected []byte
+		err      error
+	}{
+		{
+			name:     "Single byte - Max Value 127",
+			input:    127,
+			expected: []byte{0x7F},
+			err:      nil,
+		},
+		{
+			name:     "Two bytes - Value 128",
+			input:    128,
+			expected: []byte{0x80, 0x01},
+			err:      nil,
+		},
+		{
+			name:     "Two bytes - Value 16383",
+			input:    16383,
+			expected: []byte{0xFF, 0x7F},
+			err:      nil,
+		},
+		{
+			name:     "Three bytes - Value 2097151",
+			input:    2097151,
+			expected: []byte{0xFF, 0xFF, 0x7F},
+			err:      nil,
+		},
+		{
+			name:     "Four bytes - Max Value 268435455",
+			input:    268435455,
+			expected: []byte{0xFF, 0xFF, 0xFF, 0x7F},
+			err:      nil,
+		},
+		{
+			name:     "Out of range - Value 268435456",
+			input:    268435456,
+			expected: nil,
+			err:      ErrVarByteIntegerOutOfRange,
+		},
+		{
+			name:     "Negative Value",
+			input:    -1,
+			expected: nil,
+			err:      ErrVarByteIntegerOutOfRange,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			encoded, err := encodeVariableByteInteger(tc.input)
+			assert.Equal(t, tc.err, err)
+			assert.Equal(t, tc.expected, encoded)
+		})
+	}
+}
