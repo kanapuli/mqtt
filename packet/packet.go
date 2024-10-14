@@ -57,8 +57,8 @@ func (fh *FixedHeader) String() string {
 	return fmt.Sprintf("PacketType: %d, Flags: %04b, RemainingLength: %d", fh.PacketType, fh.Flags, fh.RemainingLength)
 }
 
-func (fh *FixedHeader) ControlPacketType() string {
-	return fh.PacketType.String()
+func (fh *FixedHeader) ControlPacketType() ControlPacketType {
+	return fh.PacketType.Value()
 }
 
 func parseFixedHeader(data []byte) (*FixedHeader, error) {

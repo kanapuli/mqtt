@@ -23,6 +23,10 @@ const (
 	Auth
 )
 
+func (c ControlPacketType) Value() ControlPacketType {
+	return c
+}
+
 func (c ControlPacketType) String() string {
 	switch c {
 	case Connect:
