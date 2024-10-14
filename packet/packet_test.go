@@ -211,121 +211,127 @@ func TestEncodeVariableByteInteger(t *testing.T) {
 	}
 }
 
-func TestControlPacketTypeForFixedHeader(t *testing.T) {
+func TestControlPacketTypeValueForFixedHeader(t *testing.T) {
 	testCases := []struct {
 		name            string
 		input           byte
 		remainingLength VariableByteInteger
-		expected        string
+		expected        ControlPacketType
 		err             error
 	}{
+		{
+			name:            "Reserved",
+			input:           0x00,
+			remainingLength: 0,
+			expected:        Reserved,
+			err:             nil,
+		},
 		{
 			name:            "Connect",
 			input:           0x10,
 			remainingLength: 0,
-			expected:        "Connect",
+			expected:        Connect,
 			err:             nil,
 		},
 		{
 			name:            "ConnAck",
 			input:           0x20,
 			remainingLength: 0,
-			expected:        "ConnAck",
+			expected:        ConnAck,
 			err:             nil,
 		},
 		{
 			name:            "Publish",
 			input:           0x30,
 			remainingLength: 0,
-			expected:        "Publish",
+			expected:        Publish,
 			err:             nil,
 		},
 		{
 			name:            "PubAck",
 			input:           0x40,
 			remainingLength: 0,
-			expected:        "PubAck",
+			expected:        PubAck,
 			err:             nil,
 		},
 		{
 			name:            "PubRec",
 			input:           0x50,
 			remainingLength: 0,
-			expected:        "PubRec",
+			expected:        PubRec,
 			err:             nil,
 		},
 		{
 			name:            "PubRel",
 			input:           0x60,
 			remainingLength: 0,
-			expected:        "PubRel",
+			expected:        PubRel,
 			err:             nil,
 		},
 		{
 			name:            "PubComp",
 			input:           0x70,
 			remainingLength: 0,
-			expected:        "PubComp",
+			expected:        PubComp,
 			err:             nil,
 		},
 		{
 			name:            "Subscribe",
 			input:           0x80,
 			remainingLength: 0,
-			expected:        "Subscribe",
+			expected:        Subscribe,
 			err:             nil,
 		},
 		{
 			name:            "SubAck",
 			input:           0x90,
 			remainingLength: 0,
-			expected:        "SubAck",
+			expected:        SubAck,
 			err:             nil,
 		},
 		{
 			name:            "Unsubscribe",
 			input:           0xA0,
 			remainingLength: 0,
-			expected:        "Unsubscribe",
+			expected:        Unsubscribe,
 			err:             nil,
 		},
 		{
 			name:            "UnsubAck",
 			input:           0xB0,
 			remainingLength: 0,
-			expected:        "UnsubAck",
+			expected:        UnsubAck,
 			err:             nil,
 		},
 		{
 			name:            "PingReq",
 			input:           0xC0,
 			remainingLength: 0,
-			expected:        "PingReq",
+			expected:        PingReq,
 			err:             nil,
 		},
 		{
 			name:            "PingResp",
 			input:           0xD0,
 			remainingLength: 0,
-			expected:        "PingResp",
+			expected:        PingResp,
 			err:             nil,
 		},
 		{
 			name:            "Disconnect",
 			input:           0xE0,
 			remainingLength: 0,
-			expected:        "Disconnect",
+			expected:        Disconnect,
 			err:             nil,
 		},
 		{
 			name:            "Auth",
 			input:           0xF0,
 			remainingLength: 0,
-			expected:        "Auth",
+			expected:        Auth,
 			err:             nil,
 		},
 	}
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fh, err := NewFixedHeader(tc.input, tc.remainingLength)
@@ -334,4 +340,5 @@ func TestControlPacketTypeForFixedHeader(t *testing.T) {
 			assert.Equal(t, tc.expected, actual)
 		})
 	}
+
 }
