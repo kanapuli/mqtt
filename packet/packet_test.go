@@ -210,3 +210,128 @@ func TestEncodeVariableByteInteger(t *testing.T) {
 		})
 	}
 }
+
+func TestControlPacketTypeForFixedHeader(t *testing.T) {
+	testCases := []struct {
+		name            string
+		input           byte
+		remainingLength VariableByteInteger
+		expected        string
+		err             error
+	}{
+		{
+			name:            "Connect",
+			input:           0x10,
+			remainingLength: 0,
+			expected:        "Connect",
+			err:             nil,
+		},
+		{
+			name:            "ConnAck",
+			input:           0x20,
+			remainingLength: 0,
+			expected:        "ConnAck",
+			err:             nil,
+		},
+		{
+			name:            "Publish",
+			input:           0x30,
+			remainingLength: 0,
+			expected:        "Publish",
+			err:             nil,
+		},
+		{
+			name:            "PubAck",
+			input:           0x40,
+			remainingLength: 0,
+			expected:        "PubAck",
+			err:             nil,
+		},
+		{
+			name:            "PubRec",
+			input:           0x50,
+			remainingLength: 0,
+			expected:        "PubRec",
+			err:             nil,
+		},
+		{
+			name:            "PubRel",
+			input:           0x60,
+			remainingLength: 0,
+			expected:        "PubRel",
+			err:             nil,
+		},
+		{
+			name:            "PubComp",
+			input:           0x70,
+			remainingLength: 0,
+			expected:        "PubComp",
+			err:             nil,
+		},
+		{
+			name:            "Subscribe",
+			input:           0x80,
+			remainingLength: 0,
+			expected:        "Subscribe",
+			err:             nil,
+		},
+		{
+			name:            "SubAck",
+			input:           0x90,
+			remainingLength: 0,
+			expected:        "SubAck",
+			err:             nil,
+		},
+		{
+			name:            "Unsubscribe",
+			input:           0xA0,
+			remainingLength: 0,
+			expected:        "Unsubscribe",
+			err:             nil,
+		},
+		{
+			name:            "UnsubAck",
+			input:           0xB0,
+			remainingLength: 0,
+			expected:        "UnsubAck",
+			err:             nil,
+		},
+		{
+			name:            "PingReq",
+			input:           0xC0,
+			remainingLength: 0,
+			expected:        "PingReq",
+			err:             nil,
+		},
+		{
+			name:            "PingResp",
+			input:           0xD0,
+			remainingLength: 0,
+			expected:        "PingResp",
+			err:             nil,
+		},
+		{
+			name:            "Disconnect",
+			input:           0xE0,
+			remainingLength: 0,
+			expected:        "Disconnect",
+			err:             nil,
+		},
+		{
+			name:            "Auth",
+			input:           0xF0,
+			remainingLength: 0,
+			expected:        "Auth",
+			err:             nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fh, err := NewFixedHeader(tc.input, tc.remainingLength)
+			assert.NoError(t, err)
+			actual := fh.ControlPacketType()
+			assert.Equal(t, tc.expected, actual)
+		})
+	}
+}
