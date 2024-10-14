@@ -2,8 +2,9 @@ package packet
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestShiftNBits(t *testing.T) {
@@ -92,7 +93,7 @@ func TestDecodeRemainingLength(t *testing.T) {
 	testCases := []struct {
 		name          string
 		input         []byte
-		expectedValue int
+		expectedValue uint32
 		expectedBytes int
 		expectedErr   error
 	}{
@@ -159,7 +160,7 @@ func TestDecodeRemainingLength(t *testing.T) {
 func TestEncodeVariableByteInteger(t *testing.T) {
 	testCases := []struct {
 		name     string
-		input    int
+		input    VariableByteInteger
 		expected []byte
 		err      error
 	}{
@@ -196,12 +197,6 @@ func TestEncodeVariableByteInteger(t *testing.T) {
 		{
 			name:     "Out of range - Value 268435456",
 			input:    268435456,
-			expected: nil,
-			err:      ErrVarByteIntegerOutOfRange,
-		},
-		{
-			name:     "Negative Value",
-			input:    -1,
 			expected: nil,
 			err:      ErrVarByteIntegerOutOfRange,
 		},

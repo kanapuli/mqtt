@@ -14,6 +14,10 @@ var (
 	ErrVarByteIntegerOutOfRange           = errors.New("value out of range for variable byte integer")
 )
 
+// Maximum lenght of a VariableByteInteger can be 4 bytes
+// See: https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
+type VariableByteInteger = uint32
+
 // ControlPacket represents the MQTT control packet.
 type ControlPacket struct {
 	FixedHeader    any
@@ -35,11 +39,11 @@ type FixedHeader struct {
 	// including the data in the Variable header and the Payload. The remaining length does not
 	// include the bytes used to encode the remaining length
 	// The data representation of the RemainingLength is variable byte integer
-	RemainingLength int
+	RemainingLength VariableByteInteger
 }
 
 // NewFixedHeader creates a new fixed header for the control packets
-func NewFixedHeader(packetTypeAndFlags byte, remainingLen int) (*FixedHeader, error) {
+func NewFixedHeader(packetTypeAndFlags byte, remainingLen VariableByteInteger) (*FixedHeader, error) {
 	packetType := shiftNBits(4, packetTypeAndFlags)
 	flags := getLowerFourBits(packetTypeAndFlags)
 	return &FixedHeader{
@@ -58,7 +62,7 @@ func parseFixedHeader(data []byte) (*FixedHeader, error) {
 		return nil, ErrInsufficientFixedHeader
 	}
 	packetTypeAndFlags := data[0]
-	remainingLen := 0
+	var remainingLen uint32
 	remainingLen, _, err := decodeVariableByteInteger(data[1:])
 	if err != nil {
 		return nil, err
@@ -66,7 +70,7 @@ func parseFixedHeader(data []byte) (*FixedHeader, error) {
 	return NewFixedHeader(packetTypeAndFlags, remainingLen)
 }
 
-func encodeVariableByteInteger(x int) ([]byte, error) {
+func encodeVariableByteInteger(x VariableByteInteger) ([]byte, error) {
 	if x < 0 || x > MAX_VARIABLE_BYTE_INTEGER_SIZE {
 		return nil, ErrVarByteIntegerOutOfRange
 	}
@@ -87,10 +91,10 @@ func encodeVariableByteInteger(x int) ([]byte, error) {
 	return encodedBytes, nil
 }
 
-func decodeVariableByteInteger(data []byte) (int, int, error) {
+func decodeVariableByteInteger(data []byte) (VariableByteInteger, int, error) {
 	var (
-		value      int
-		multiplier int = 1
+		value      VariableByteInteger
+		multiplier uint32 = 1
 		bytesRead  int
 	)
 	const maxMultiplierValue = 128 * 128 * 128
@@ -98,7 +102,7 @@ func decodeVariableByteInteger(data []byte) (int, int, error) {
 	for _, b := range data {
 		bytesRead++
 		// Mask out the MSB which is the continuation bit
-		digit := int(b & 0x7F)
+		digit := uint32(b & 0x7F)
 		value += digit * multiplier
 
 		// Return the value if the continuation bit is set to 0
