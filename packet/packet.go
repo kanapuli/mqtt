@@ -33,7 +33,7 @@ type ControlPacket struct {
 // byte1	|  Mqtt control packet type		| Flags to each ctrl pkt type	|
 // byte2 ..	|  Remaining Length of bytes inside the ctrl pkt				|
 type FixedHeader struct {
-	PacketType byte
+	PacketType ControlPacketType
 	Flags      byte
 	// RemainingLength represents the number of bytes remaining within the current Control packet,
 	// including the data in the Variable header and the Payload. The remaining length does not
@@ -47,7 +47,7 @@ func NewFixedHeader(packetTypeAndFlags byte, remainingLen VariableByteInteger) (
 	packetType := shiftNBits(4, packetTypeAndFlags)
 	flags := getLowerFourBits(packetTypeAndFlags)
 	return &FixedHeader{
-		PacketType:      packetType,
+		PacketType:      ControlPacketType(packetType),
 		Flags:           flags,
 		RemainingLength: remainingLen,
 	}, nil
@@ -55,6 +55,10 @@ func NewFixedHeader(packetTypeAndFlags byte, remainingLen VariableByteInteger) (
 
 func (fh *FixedHeader) String() string {
 	return fmt.Sprintf("PacketType: %d, Flags: %04b, RemainingLength: %d", fh.PacketType, fh.Flags, fh.RemainingLength)
+}
+
+func (fh *FixedHeader) ControlPacketType() string {
+	return fh.PacketType.String()
 }
 
 func parseFixedHeader(data []byte) (*FixedHeader, error) {
